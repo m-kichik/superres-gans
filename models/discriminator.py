@@ -34,7 +34,7 @@ class Discriminator(nn.Module):
     https://arxiv.org/pdf/1609.04802v5.pdf
     """
 
-    def __init__(self):
+    def __init__(self, image_size=512):
         super().__init__()
         blocks = [
             nn.Conv2d(
@@ -66,8 +66,8 @@ class Discriminator(nn.Module):
         self.features = nn.Sequential(*blocks)
 
         self.LeakyReLU = nn.LeakyReLU(0.2, inplace=True)
-        self.fc1 = nn.Linear(512 * 1024, 1024)
-        self.fc2 = nn.Linear(1024, 1)
+        self.fc1 = nn.Linear(image_size * image_size * 2, image_size * 2)
+        self.fc2 = nn.Linear(image_size * 2, 1)
         self.sigmoid = nn.Sigmoid()
 
         for m in self.modules():

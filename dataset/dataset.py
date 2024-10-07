@@ -6,7 +6,7 @@ from torchvision import transforms as TTR
 
 
 class DIV2K(torch.utils.data.Dataset):
-    def __init__(self, data_path):
+    def __init__(self, data_path, low_res_size=256, high_res_size=512):
         super().__init__()
 
         self.data_path = data_path
@@ -18,8 +18,8 @@ class DIV2K(torch.utils.data.Dataset):
                 TTR.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
             ]
         )
-        self.random_crop = TTR.RandomCrop(512)
-        self.resize = TTR.Resize(256, TTR.InterpolationMode.BICUBIC)
+        self.random_crop = TTR.RandomCrop(high_res_size)
+        self.resize = TTR.Resize(low_res_size, TTR.InterpolationMode.BICUBIC)
 
     def __len__(self):
         return len(self.images)

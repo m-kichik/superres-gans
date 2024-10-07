@@ -61,7 +61,7 @@ class SRResNet(nn.Module):
     https://arxiv.org/pdf/1609.04802v5.pdf
     """
 
-    def __init__(self, scale_factor: int, channels: int = 3, num_blocks: int = 16):
+    def __init__(self, n_upsamples: int, channels: int = 3, num_blocks: int = 16):
         super().__init__()
 
         self.head = nn.Sequential(
@@ -91,7 +91,6 @@ class SRResNet(nn.Module):
         self.res_blocks.append(nn.BatchNorm2d(num_features=64))
         self.res_blocks = nn.Sequential(*self.res_blocks)
 
-        n_upsamples = 1 if scale_factor == 2 else 2
         self.upsample = UpsampleBlock(
             n_upsamples=n_upsamples,
             channels=64,
