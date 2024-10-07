@@ -15,6 +15,7 @@ def vanilla_gen_step(
 
     X_gen = G(X)
 
+
     scores_gen = D(X_gen)
     loss = -F.binary_cross_entropy(scores_gen, torch.zeros_like(scores_gen))
     G_optim.zero_grad()
