@@ -3,6 +3,7 @@ import torch
 from model import SRResNet, Discriminator
 from dataset import DIV2K
 
+
 def main():
     # G = SRResNet(scale_factor=2)
     # D = Discriminator()
