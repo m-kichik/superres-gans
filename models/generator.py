@@ -107,7 +107,7 @@ class SRResNet(nn.Module):
                 stride=1,
                 padding=4,
             ),
-            nn.Sigmoid(),
+            # nn.Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
