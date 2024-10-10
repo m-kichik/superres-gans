@@ -23,7 +23,7 @@ from tools import (
     ns_mse_vgg_discr_step,
 )
 
-EXP_NAME = "ns_mse_vgg_discr4_without_sigmoid_ep100"
+EXP_NAME = "ns_mse_vgg_discr10_128_256_200ep"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 """
@@ -215,6 +215,14 @@ def train_ns(
             step_i += 1
 
             print(f"discr loss: {d_loss:.5f} | gen loss: {g_loss:.5f}")
+            wandb.log(
+                {
+                    "discriminator_loss": d_loss,
+                    "generator_loss": g_loss,
+                    "epoch": epoch_i,
+                    "step": step_i,
+                }
+            )
 
         if eval_steps and epoch_i % eval_steps == 0:
             avg_psnr, avg_ssim, avg_lpips = evaluate(G, val_loader)
@@ -243,8 +251,9 @@ def train_ns(
 
 
 def main():
-    low_res_size = 64
-    high_res_size = 512
+    wandb.login()
+    low_res_size = 128
+    high_res_size = 256
     scale_factor = int(math.log2(high_res_size // low_res_size))
 
     div2k_train = DIV2K(
@@ -255,13 +264,11 @@ def main():
     )
 
     wandb.init(project="superres-gans", name=EXP_NAME)  # Adjust project name as needed
-    div2k_train = DIV2K("data/DIV2K_train_HR")
-    div2k_val = DIV2K("data/DIV2K_valid_HR")
 
     train_loader = DataLoader(div2k_train, batch_size=4, shuffle=True)
     val_loader = DataLoader(div2k_val, batch_size=4, shuffle=True)
 
-    G = SRResNet(scale_factor=scale_factor).to(DEVICE)
+    G = SRResNet(n_upsamples=scale_factor).to(DEVICE)
     D = Discriminator(image_size=high_res_size).to(DEVICE)
 
     G_optim = torch.optim.RMSprop(G.parameters(), lr=2e-4)
@@ -285,9 +292,9 @@ def main():
         D,
         G_optim,
         D_optim,
-        discriminator_steps=4,
+        discriminator_steps=10,
         r1_regularizer=0.1,
-        n_epochs=100,
+        n_epochs=200,
     )
 
     wandb.finish()
