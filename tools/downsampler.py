@@ -17,7 +17,7 @@ class DownSampler(nn.Module):
         return self.downsample(x)
 
     def downsample(self, x: torch.Tensor):
-        x = x ** self.gamma
+        x = x**self.gamma
         x = self.avg_pool(x)
         x = x ** (1.0 / self.gamma)
         return x

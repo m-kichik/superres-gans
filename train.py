@@ -1,15 +1,17 @@
+from argparse import ArgumentParser
 from tqdm import tqdm
 import math
-import wandb
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
 import cv2
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
+
 import lpips
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
+
+import wandb
 
 from models import SRResNet, Discriminator
 from dataset import DIV2K
@@ -23,7 +25,7 @@ from tools import (
     ns_mse_vgg_discr_step,
 )
 
-EXP_NAME = "ns_mse_vgg_discr10_128_256_200ep"
+
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 """
@@ -31,11 +33,7 @@ gan_loss,
 pixels_mse_loss,
 vgg_mse_loss
 """
-LOSS_WEIGHTS = [
-        10e-3,
-        0.5,
-        0.5
-    ]
+LOSS_WEIGHTS = [10e-3, 0.5, 0.5]
 
 # Initialize LPIPS model
 lpips_loss = lpips.LPIPS(net="alex").to(DEVICE)
@@ -89,6 +87,7 @@ def evaluate(G, val_loader):
 
     return avg_psnr, avg_ssim, avg_lpips
 
+
 def train_vanilla(
     train_loader: DataLoader,
     val_loader: DataLoader,
@@ -99,6 +98,7 @@ def train_vanilla(
     discriminator_steps: int,
     n_epochs: int,
     eval_steps: int = 10,
+    exp_name: str = None,
 ) -> None:
 
     G.train()
@@ -160,11 +160,11 @@ def train_vanilla(
             # Save model weights if average metric is improved
             if avg_metric > best_avg_metric:
                 best_avg_metric = avg_metric
-                torch.save(G.state_dict(), f"weights/G_best_avg_metric_{EXP_NAME}.pth")
+                torch.save(G.state_dict(), f"weights/G_best_avg_metric_{exp_name}.pth")
                 print(f"Best average metric updated: {best_avg_metric:.4f}")
 
-    torch.save(G.state_dict(), f"weights/G_{EXP_NAME}.pth")
-    torch.save(D.state_dict(), f"weights/D_{EXP_NAME}.pth")
+    torch.save(G.state_dict(), f"weights/G_{exp_name}.pth")
+    torch.save(D.state_dict(), f"weights/D_{exp_name}.pth")
 
 
 def train_ns(
@@ -178,6 +178,7 @@ def train_ns(
     n_epochs: int,
     r1_regularizer: float = 1.0,
     eval_steps: int = 10,
+    exp_name: str = None,
 ) -> None:
 
     G.train()
@@ -243,27 +244,35 @@ def train_ns(
             # Save model weights if average metric is improved
             if avg_metric > best_avg_metric:
                 best_avg_metric = avg_metric
-                torch.save(G.state_dict(), f"weights/G_best_avg_metric_{EXP_NAME}.pth")
+                torch.save(G.state_dict(), f"weights/G_best_avg_metric_{exp_name}.pth")
                 print(f"Best average metric updated: {best_avg_metric:.4f}")
 
-    torch.save(G.state_dict(), f"weights/G_{EXP_NAME}.pth")
-    torch.save(D.state_dict(), f"weights/D_{EXP_NAME}.pth")
+    torch.save(G.state_dict(), f"weights/G_{exp_name}.pth")
+    torch.save(D.state_dict(), f"weights/D_{exp_name}.pth")
 
 
-def main():
+def main(args):
     wandb.login()
-    low_res_size = 128
-    high_res_size = 256
+
+    if args.exp_name is None:
+        from datetime import date
+
+        exp_name = date.today().strftime("%b-%d-%Y")
+    else:
+        exp_name = args.exp_name
+
+    low_res_size = args.low_res
+    high_res_size = args.high_res
     scale_factor = int(math.log2(high_res_size // low_res_size))
 
     div2k_train = DIV2K(
-        "data/DIV2K_train_HR", low_res_size=low_res_size, high_res_size=high_res_size
+        args.train_data_path, low_res_size=low_res_size, high_res_size=high_res_size
     )
     div2k_val = DIV2K(
-        "data/DIV2K_valid_HR", low_res_size=low_res_size, high_res_size=high_res_size
+        args.train_data_path, low_res_size=low_res_size, high_res_size=high_res_size
     )
 
-    wandb.init(project="superres-gans", name=EXP_NAME)  # Adjust project name as needed
+    wandb.init(project="superres-gans", name=exp_name)  # Adjust project name as needed
 
     train_loader = DataLoader(div2k_train, batch_size=4, shuffle=True)
     val_loader = DataLoader(div2k_val, batch_size=4, shuffle=True)
@@ -282,7 +291,8 @@ def main():
     #     G_optim,
     #     D_optim,
     #     discriminator_steps=1,
-    #     n_epochs=10
+    #     n_epochs=10,
+    #     exp_name=exp_name
     # )
 
     train_ns(
@@ -295,9 +305,25 @@ def main():
         discriminator_steps=10,
         r1_regularizer=0.1,
         n_epochs=200,
+        exp_name=exp_name,
     )
 
     wandb.finish()
 
+
+def parse_args():
+    parser = ArgumentParser()
+
+    parser.add_argument("--low_res", type=int, default=128)
+    parser.add_argument("--high_res", type=int, default=256)
+    parser.add_argument("--train_data_path", type=str)
+    parser.add_argument("--val_data_path", type=str)
+    parser.add_argument("--exp_name", type=str, default=None)
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+
+    main(args)

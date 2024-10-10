@@ -12,6 +12,7 @@ class RandomShiftCrop:
     """
     crops rectangle with random shift and size to max_shift less.
     """
+
     def __init__(self, max_shift: int):
         self.max_shift = max_shift
 
@@ -21,5 +22,13 @@ class RandomShiftCrop:
         rx = random.randrange(0, self.max_shift)
         ry = random.randrange(0, self.max_shift)
 
-        xx = [x[:, :, ry: initial_size - self.max_shift + ry, rx: initial_size - self.max_shift + rx] for x in xx]
+        xx = [
+            x[
+                :,
+                :,
+                ry : initial_size - self.max_shift + ry,
+                rx : initial_size - self.max_shift + rx,
+            ]
+            for x in xx
+        ]
         return xx

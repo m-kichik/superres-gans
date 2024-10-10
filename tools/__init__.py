@@ -20,5 +20,5 @@ __all__ = [
     DiscriminatorVggMse,
     FeaturesFromVGG16,
     DownSampler,
-    RandomShiftCrop
+    RandomShiftCrop,
 ]

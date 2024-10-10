@@ -13,7 +13,9 @@ from .random_crop import RandomShiftCrop
 
 
 class DiscriminatorVggMse(nn.Module):
-    def __init__(self, weight: float, inpad_size: int, random_shift: int = 8, prescale: int = 1):
+    def __init__(
+        self, weight: float, inpad_size: int, random_shift: int = 8, prescale: int = 1
+    ):
         super(DiscriminatorVggMse, self).__init__()
 
         self.mse_loss = torch.nn.MSELoss("mean")
@@ -50,7 +52,11 @@ class DiscriminatorVggMse(nn.Module):
 
         results: List[torch.Tensor] = []
         for y_f, label_f in zip(y_features, label_features):
-            results.append(self.mse_loss(self.crop(y_f, initial_size), self.crop(label_f, initial_size)))
+            results.append(
+                self.mse_loss(
+                    self.crop(y_f, initial_size), self.crop(label_f, initial_size)
+                )
+            )
         return results
 
     def loss(self, y: torch.Tensor, label: torch.Tensor) -> torch.Tensor:

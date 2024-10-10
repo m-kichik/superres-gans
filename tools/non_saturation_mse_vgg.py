@@ -13,7 +13,7 @@ def ns_mse_vgg_gen_step(
     D: nn.Module,
     G_optim: torch.optim.Optimizer,
     weights: List[float],
-    device: str
+    device: str,
 ) -> torch.Tensor:
     G.train()
     D.eval()
@@ -23,7 +23,13 @@ def ns_mse_vgg_gen_step(
     scores_gen = D(X_gen)
     mse = nn.MSELoss()
     d_vgg_mse = DiscriminatorVggMse(weight=0.0001, inpad_size=16).to(device)
-    loss = [w * l for w, l in zip(weights,  [F.softplus(-scores_gen).mean(), mse(X_gen, Y), d_vgg_mse.loss(X_gen, Y)])]
+    loss = [
+        w * l
+        for w, l in zip(
+            weights,
+            [F.softplus(-scores_gen).mean(), mse(X_gen, Y), d_vgg_mse.loss(X_gen, Y)],
+        )
+    ]
     loss = sum(loss)
     G_optim.zero_grad()
     loss.backward()
@@ -40,7 +46,7 @@ def ns_mse_vgg_discr_step(
     D_optim: torch.optim.Optimizer,
     weights: List[float],
     device: str,
-    r1_regularizer: float = 1.0
+    r1_regularizer: float = 1.0,
 ) -> torch.Tensor:
     G.eval()
     D.train()
@@ -57,7 +63,13 @@ def ns_mse_vgg_discr_step(
 
     mse = nn.MSELoss()
     d_vgg_mse = DiscriminatorVggMse(weight=0.0001, inpad_size=16).to(device)
-    loss = [w * l for w, l in zip(weights,  [F.softplus(scores_gen).mean(), mse(X_gen, Y), d_vgg_mse.loss(X_gen, Y)])]
+    loss = [
+        w * l
+        for w, l in zip(
+            weights,
+            [F.softplus(scores_gen).mean(), mse(X_gen, Y), d_vgg_mse.loss(X_gen, Y)],
+        )
+    ]
     loss_gen = sum(loss)
 
     loss_real = F.softplus(-scores_real).mean()
