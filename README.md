@@ -1,4 +1,4 @@
-:fire: In this repository we reproduce the HRResNet model [arxiv.org/abs/1609.04802](https://arxiv.org/abs/1609.04802).
+:fire: In this repository we reproduce the SRResNet model [arxiv.org/abs/1609.04802](https://arxiv.org/abs/1609.04802).
 
 Our results:
 ![Our SRResNet](media/srresnet_results.png)
