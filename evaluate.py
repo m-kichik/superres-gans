@@ -98,7 +98,7 @@ def main(args):
     model = load_model(model_path, scale_factor)
 
     div2k_val = DIV2K(
-        args.data_path, low_res_size=low_res_size, high_res_size=high_res_size
+        args.val_data_path, low_res_size=low_res_size, high_res_size=high_res_size
     )
     val_loader = DataLoader(div2k_val, batch_size=1, shuffle=False)
 
@@ -110,7 +110,7 @@ def parse_args():
 
     parser.add_argument("--low_res", type=int, default=128)
     parser.add_argument("--high_res", type=int, default=256)
-    parser.add_argument("--data_path", type=str)
+    parser.add_argument("--val_data_path", type=str)
     parser.add_argument("--ckpt_path", type=str)
 
     return parser.parse_args()
